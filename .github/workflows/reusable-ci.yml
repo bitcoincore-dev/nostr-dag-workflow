@@ -1,0 +1,93 @@
+name: Reusable CI
+
+on:
+  workflow_call:
+    inputs:
+      run_native:
+        description: Run native build and tests
+        required: false
+        default: true
+        type: boolean
+      run_wasm:
+        description: Run wasm build
+        required: false
+        default: true
+        type: boolean
+      rust_toolchain:
+        description: Rust toolchain to install
+        required: false
+        default: stable
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    if: ${{ inputs.run_native }}
+    name: Test (native)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ inputs.rust_toolchain }}
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ inputs.rust_toolchain }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build (native)
+        run: cargo build --features native
+
+      - name: Run tests
+        run: cargo test --features native
+
+  wasm:
+    if: ${{ inputs.run_wasm }}
+    name: Build (wasm)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ inputs.rust_toolchain }}
+          targets: wasm32-unknown-unknown
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-wasm-${{ inputs.rust_toolchain }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+
+      - name: Build wasm package
+        run: wasm-pack build --target web --no-default-features --features wasm
+
+      - name: Copy shared CSS for site assets
+        run: |
+          mkdir -p site/shared
+          cp demo/shared/page.css site/shared/
+
+      - name: Upload wasm artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-pkg
+          path: pkg/
