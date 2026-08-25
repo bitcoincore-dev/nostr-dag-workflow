@@ -42,6 +42,31 @@ firefox demo/index.html
 
 Click "Connect", then send messages. Watch them go from pending (gray) to canonical (green) as acks arrive.
 
+## Reusable GitHub CI workflow
+
+This repository now exposes a reusable workflow at:
+
+- `.github/workflows/reusable-ci.yml`
+
+Other repositories can call it with `workflow_call`:
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  nostr-dag-ci:
+    uses: bitcoincore-dev/nostr-dag-workflow/.github/workflows/reusable-ci.yml@master
+    with:
+      run_native: true
+      run_wasm: true
+      rust_toolchain: stable
+```
+
 ## Git viewer detail view
 
 The Git viewer now supports a repo detail view on the same static page:
