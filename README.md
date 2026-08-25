@@ -60,12 +60,14 @@ on:
 
 jobs:
   nostr-dag-ci:
-    uses: bitcoincore-dev/nostr-dag-workflow/.github/workflows/reusable-ci.yml@master
+    uses: bitcoincore-dev/nostr-dag-workflow/.github/workflows/reusable-ci.yml@<tag-or-sha>
     with:
       run_native: true
       run_wasm: true
       rust_toolchain: stable
 ```
+
+Pin `<tag-or-sha>` to a release tag or commit SHA in your repository for stable, reproducible CI behavior.
 
 ## Git viewer detail view
 

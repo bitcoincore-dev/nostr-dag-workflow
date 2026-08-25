@@ -76,7 +76,7 @@ jobs:
           key: ${{ runner.os }}-cargo-wasm-${{ inputs.rust_toolchain }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        uses: jetli/wasm-pack-action@v0.4.0
 
       - name: Build wasm package
         run: wasm-pack build --target web --no-default-features --features wasm
